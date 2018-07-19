@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "parse": "node parse.js --name",
-    "convert": "node converter.js",
+    "parse": "node bin/parse.js --name",
+    "convert": "node bin/converter.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
