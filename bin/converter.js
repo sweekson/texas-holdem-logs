@@ -2,7 +2,7 @@
 const path = require('path');
 const grab = require('ps-grab');
 
-const LogConverter = require('./model/LogConverter');
+const LogConverter = require('../model/LogConverter');
 
 class LogFilters {
   winner(data) {
@@ -10,7 +10,7 @@ class LogFilters {
   }
 }
 
-class LogHandlers {
+class ActionModelHandlers {
   input(original, formatted) {
     const { table, player, action } = original;
     return [].concat(
@@ -19,11 +19,9 @@ class LogHandlers {
       table.board,
       table.players,
       player.chips,
-      action.type,
-      action.bet,
       table.bet,
+      action.type,
       (player.bet + action.bet),
-      Number(((player.bet + action.bet) / table.bet).toFixed(2)),
     );
   }
 
@@ -36,15 +34,11 @@ class LogHandlers {
 }
 
 const converter = new LogConverter({
-  cwd: path.join(__dirname, '/logs/json'),
+  cwd: path.join(__dirname, '..', 'data/logs'),
   src: '00001-00020/00019.json',
-  dest: path.join(__dirname, '/train'),
+  dest: path.join(__dirname, '..', 'data/train'),
   filters: new LogFilters(),
-  handlers: new LogHandlers(),
-  model: {
-    inputs: [0, 0, 0, 0, 0, 0, 0, 0],
-    outputs: [0, 0, 0, 0, 0, 0]
-  }
+  handlers: new ActionModelHandlers()
 });
 
 converter.convert();
