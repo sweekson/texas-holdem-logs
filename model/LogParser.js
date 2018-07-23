@@ -8,21 +8,22 @@ const FileReader = require('./FileReader');
 const FileWriter = require('./FileWriter');
 const Game = require('./Game');
 const PlayerAction = require('./PlayerAction');
+const PlayerRoundEndResult = require('./PlayerRoundEndResult');
 const Winner = require('./Winner');
 
 module.exports = class LogParser {
   constructor(options) {
     this.options = options;
     this.games = new Map();
+    this.bet = new Map();
     this.buffer = [];
-    this.over = false;
     this.lines = 0;
     this.patterns = {
       table: />>> table (\d+) >>>/,
-      start: />>> table \d+ >>> new round : 1$/,
+      round_start: />>> table \d+ >>> new round : 1$/,
       action: />>> event SHOW_ACTION >>>/,
-      over: />>> table \d+ >>> game over, winners/,
-      winners: />>> table \d+ >>>/
+      round_end: />>> event ROUND_END >>>/,
+      game_over: />>> event GAME_OVER >>>/,
     };
     this.profile = null;
     this.init();
@@ -48,10 +49,10 @@ module.exports = class LogParser {
 
       reader.on('data', line => {
         ++this.lines;
-        this.patterns.start.test(line) && this.onGameStart(file, line);
+        this.patterns.round_start.test(line) && this.onGameStart(file, line);
         this.patterns.action.test(line) && this.onPlayerAction(line);
-        this.over && this.onGameOver(line);
-        this.patterns.over.test(line) && (this.over = true);
+        this.patterns.round_end.test(line) && this.onRoundEnd(line);
+        this.patterns.game_over.test(line) && this.onGameOver(line);
       });
 
       reader.on('end', _ => this.onFileEnd());
@@ -67,22 +68,36 @@ module.exports = class LogParser {
     const [ , text ] = line.split(this.patterns.action);
     const { data } = JSON.parse(text);
     const { table, players } = data;
-    const player = players.find(v => v.playerName === data.action.playerName);
-    const action = new PlayerAction(data.action, table, player, this.lines);
     const game = this.games.get(Number(table.tableNumber));
     if (!game) { return; }
+    const player = players.find(v => v.playerName === data.action.playerName);
+    const action = new PlayerAction(data.action, table, player, this.lines);
+    this.bet.set(action.player.name, action.player.bet + action.action.bet);
     game.actions.push(action);
     game.players = players.map(v => v.playerName);
   }
 
-  onGameOver(line) {
-    this.over = false;
-    const [ , table ] = line.match(this.patterns.table);
-    const game = this.games.get(Number(table));
+  onRoundEnd(line) {
+    const [ , text ] = line.split(this.patterns.round_end);
+    const { data } = JSON.parse(text);
+    const { table, players } = data;
+    const game = this.games.get(Number(table.tableNumber));
     if (!game) { return; }
-    const [ , text ] = line.split(this.patterns.winners);
-    const winners = JSON.parse(text);
+    players.forEach(player => {
+      const bet = this.bet.get(player.playerName);
+      const result = new PlayerRoundEndResult(table, player, bet, this.lines);
+      game.actions.push(result);
+    });
+  }
+
+  onGameOver(line) {
+    const [ , text ] = line.split(this.patterns.game_over);
+    const { data } = JSON.parse(text);
+    const { table, players, winners } = data;
+    const game = this.games.get(Number(table.tableNumber));
+    if (!game) { return; }
     game.winners = winners.map(data => new Winner(data));
+    game.players.forEach(player => this.bet.set(player, 0));
     this.buffer.push(game);
     this.buffer.length === this.options.batch && this.flush();
   }
