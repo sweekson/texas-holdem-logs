@@ -88,7 +88,8 @@ module.exports = class LogConverter {
     const dest = this.options.dest;
     const inputs = path.join(dest, `${filename}.inputs.json`);
     const outputs = path.join(dest, `${filename}.outputs.json`);
-    console.log(inputs, this.inputs);
+    console.log(inputs, '\n\r');
+    this.inputs.forEach((input) => console.log(input.join(', '), '\n\r'));
     // console.log(outputs, this.outputs);
     // FileWriter.json(inputs, this.inputs);
     // FileWriter.json(outputs, this.outputs);
