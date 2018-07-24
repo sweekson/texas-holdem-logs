@@ -109,7 +109,7 @@ module.exports = class LogParser {
   }
 
   onFileEnd() {
-    this.flush();
+    this.buffer.length > 0 && this.flush();
   }
 
   flush() {
