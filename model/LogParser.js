@@ -1,7 +1,6 @@
 
 const path = require('path');
 const fs = require('fs');
-const glob = require('glob');
 const split = require('split');
 
 const FileReader = require('./FileReader');
@@ -41,24 +40,27 @@ module.exports = class LogParser {
 
   parse() {
     const cwd = this.options.cwd;
-    const files = glob.sync(this.options.src, { cwd });
+    const src = this.options.src;
+    const filepath = path.join(cwd, src);
+    const reader = fs.createReadStream(filepath).pipe(split());
 
-    files.forEach(file => {
-      console.log(`Parsing file: ${file}`);
-      const filepath = path.join(cwd, file);
-      const reader = fs.createReadStream(filepath).pipe(split());
+    console.log(`Parsing file: ${src}`);
 
-      this.lines = 0;
-
+    return new Promise((resolve, reject) => {
       reader.on('data', line => {
         ++this.lines;
-        this.patterns.round_start.test(line) && this.onGameStart(file, line);
+        this.patterns.round_start.test(line) && this.onGameStart(src, line);
         this.patterns.action.test(line) && this.onPlayerAction(line);
         this.patterns.round_end.test(line) && this.onRoundEnd(line);
         this.patterns.game_over.test(line) && this.onGameOver(line);
       });
 
-      reader.on('end', _ => this.onFileEnd());
+      reader.on('end', _ => {
+        this.onFileEnd();
+        resolve();
+      });
+
+      reader.on('error', error => reject(error));
     });
   }
 
