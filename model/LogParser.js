@@ -125,6 +125,7 @@ module.exports = class LogParser {
     const folder = path.join(this.options.dest, `${start}-${end}`);
     const filename = `${number}.json`;
     const filepath = path.join(folder, filename);
+    !FileReader.exists(this.options.dest) && FileWriter.folder(this.options.dest, 0o775);
     FileWriter.folder(folder, 0o775);
     FileWriter.json(filepath, this.buffer);
     FileWriter.json(this.profile.filepath, { counter });
