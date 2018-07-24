@@ -8,4 +8,6 @@ FileReader.json = file => {
   return JSON.parse(text);
 };
 
+FileReader.exists = file => fs.existsSync(file);
+
 module.exports = FileReader;
