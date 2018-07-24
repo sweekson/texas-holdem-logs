@@ -20,6 +20,7 @@ module.exports = class LogParser {
     this.lines = 0;
     this.patterns = {
       table: />>> table (\d+) >>>/,
+      datetime: /^\[(\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d\.\d\d\d)\]/,
       round_start: />>> table \d+ >>> new round : 1$/,
       action: />>> event SHOW_ACTION >>>/,
       round_end: />>> event ROUND_END >>>/,
@@ -92,12 +93,17 @@ module.exports = class LogParser {
 
   onGameOver(line) {
     const [ , text ] = line.split(this.patterns.game_over);
+    const [ , datetime ] = line.split(this.patterns.datetime);
     const { data } = JSON.parse(text);
-    const { table, players, winners } = data;
+    const { table, winners } = data;
     const game = this.games.get(Number(table.tableNumber));
     if (!game) { return; }
+    game.table.rounds = table.roundCount;
     game.winners = winners.map(data => new Winner(data));
     game.players.forEach(player => this.bet.set(player, 0));
+    ++this.profile.counter.games;
+    game.id = this.profile.counter.games;
+    game.datetime = new Date(datetime).getTime();
     this.buffer.push(game);
     this.buffer.length === this.options.batch && this.flush();
   }
@@ -107,11 +113,11 @@ module.exports = class LogParser {
   }
 
   flush() {
-    ++this.profile.total;
-    const total = this.profile.total;
-    const number = String(this.profile.total).padStart(5, '0');
+    ++this.profile.counter.files;
+    const counter = this.profile.counter;
+    const number = String(counter.files).padStart(5, '0');
     const rotate = this.options.rotate;
-    const base = Math.floor((this.profile.total - 1) / rotate);
+    const base = Math.floor((counter.files - 1) / rotate);
     const start = String((base * 20) + 1).padStart(5, '0');
     const end = String((base + 1) * rotate).padStart(5, '0');
     const folder = path.join(this.options.dest, `${start}-${end}`);
@@ -119,7 +125,7 @@ module.exports = class LogParser {
     const filepath = path.join(folder, filename);
     FileWriter.folder(folder, 0o775);
     FileWriter.json(filepath, this.buffer);
-    FileWriter.json(this.profile.filepath, { total });
+    FileWriter.json(this.profile.filepath, { counter });
     this.buffer.splice(0);
     console.log(`File ${filename} created`);
   }
