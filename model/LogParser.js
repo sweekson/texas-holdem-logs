@@ -31,10 +31,11 @@ module.exports = class LogParser {
 
   init() {
     const cwd = this.options.cwd;
+    const regress = this.options.regress;
     const filepath = path.join(cwd, '.profile.json');
     const exists = FileReader.exists(filepath);
-    this.profile = exists ? FileReader.json(filepath) : { counter: { games: 0, files: 0 } };
-    !exists && FileWriter.json(filepath, this.profile);
+    this.profile = exists && !regress ? FileReader.json(filepath) : { counter: { games: 0, files: 0 } };
+    (!exists || regress) && FileWriter.json(filepath, this.profile);
     this.profile.filepath = filepath;
   }
 
