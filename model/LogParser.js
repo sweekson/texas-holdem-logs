@@ -33,7 +33,9 @@ module.exports = class LogParser {
   init() {
     const cwd = this.options.cwd;
     const filepath = path.join(cwd, '.profile.json');
-    this.profile = FileReader.json(filepath);
+    const exists = FileReader.exists(filepath);
+    this.profile = exists ? FileReader.json(filepath) : { counter: { games: 0, files: 0 } };
+    !exists && FileWriter.json(filepath, this.profile);
     this.profile.filepath = filepath;
   }
 
