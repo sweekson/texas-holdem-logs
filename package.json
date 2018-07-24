@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "parse": "node bin/parse.js --name",
-    "convert": "node bin/converter.js",
+    "convert": "node bin/convert.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
