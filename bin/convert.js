@@ -3,40 +3,28 @@ const path = require('path');
 const glob = require('glob');
 const grab = require('ps-grab');
 
+const DynamicRequire = require('../model/DynamicRequire');
 const LogConverter = require('../model/LogConverter');
+const ModelDataFilters = require('../model/ModelDataFilters');
 
-class LogFilters {
-  winner(data) {
-    return data.chips > 3000;
-  }
-}
-
-class ActionModelHandlers {
-  input(original, formatted) {
-    const { table, player } = formatted;
-    return [].concat(
-      table.players,
-      player.cards.map(v => v + 1),
-      table.board.map(v => v + 1),
-      player.chips,
-    );
-  }
-
-  output(original, formatted) {
-    const { action } = formatted;
-    const outputs = [0, 0, 0, 0, 0, 0];
-    outputs.splice(action.type, 1, 1);
-    return outputs;
-  }
-}
+DynamicRequire.require('*ModelDataHandlers', path.resolve(__dirname, '../model'));
 
 const source = grab('--source');
 const pattern = grab('--pattern');
+const handler = grab('--handler');
+const prefix = grab('--out-prefix');
+const suffix = grab('--out-suffix');
+
+if (!source && pattern) { return console.error('Source file is not assigned'); }
+if (!handler) { return console.error('Model handler is not assigned'); }
+
 const options = {
   cwd: path.join(__dirname, '..', 'data/logs'),
   dest: path.join(__dirname, '..', 'data/train'),
-  filters: new LogFilters(),
-  handlers: new ActionModelHandlers()
+  filters: new ModelDataFilters(),
+  handlers: DynamicRequire.create(`${handler}ModelDataHandlers`),
+  prefix,
+  suffix,
 };
 const convert = options => new LogConverter(options).convert();
 const foreach = async files => {
