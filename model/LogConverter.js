@@ -79,13 +79,15 @@ module.exports = class LogConverter {
     const cwd = options.cwd;
     const src = options.src;
     const source = path.join(cwd, src);
-    const suffix = path.extname(source);
-    const basename = path.basename(source, suffix);
+    const extension = path.extname(source);
+    const basename = path.basename(source, extension);
     const folder = path.dirname(src);
     const dest = path.join(options.dest, folder);
+    const prefix = options.prefix || '';
+    const suffix = options.suffix || '';
     const filename = {
-      inputs: `${basename}.inputs.json`,
-      outputs: `${basename}.outputs.json`,
+      inputs: `${prefix}${basename}.inputs${suffix}.json`,
+      outputs: `${prefix}${basename}.outputs${suffix}.json`,
     };
     const filepath = {
       inputs: path.join(dest, filename.inputs),
