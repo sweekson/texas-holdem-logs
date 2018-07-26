@@ -1,5 +1,6 @@
 
 const path = require('path');
+const glob = require('glob');
 const grab = require('ps-grab');
 
 const LogConverter = require('../model/LogConverter');
@@ -12,33 +13,37 @@ class LogFilters {
 
 class ActionModelHandlers {
   input(original, formatted) {
-    const { table, player, action } = original;
+    const { table, player } = formatted;
     return [].concat(
-      player.name.slice(0, 5),
-      player.cards,
-      table.board,
       table.players,
+      player.cards.map(v => v + 1),
+      table.board.map(v => v + 1),
       player.chips,
-      table.bet,
-      action.type,
-      (player.bet + action.bet),
     );
   }
 
   output(original, formatted) {
-    const { table, player, action } = original;
+    const { action } = formatted;
     const outputs = [0, 0, 0, 0, 0, 0];
-    outputs.splice(formatted.action.type, 1, 1);
+    outputs.splice(action.type, 1, 1);
     return outputs;
   }
 }
 
-const converter = new LogConverter({
+const source = grab('--source');
+const pattern = grab('--pattern');
+const options = {
   cwd: path.join(__dirname, '..', 'data/logs'),
-  src: '00001-00020/00019.json',
   dest: path.join(__dirname, '..', 'data/train'),
   filters: new LogFilters(),
   handlers: new ActionModelHandlers()
-});
+};
+const convert = options => new LogConverter(options).convert();
+const foreach = async files => {
+  for (const file of files) {
+    options.src = file;
+    await convert(options);
+  }
+};
 
-converter.convert();
+foreach(source ? [source] : glob.sync(pattern, { cwd: options.cwd }));
