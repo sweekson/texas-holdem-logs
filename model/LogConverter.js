@@ -62,8 +62,8 @@ module.exports = class LogConverter {
         const input = handlers.input(original, formatted);
         const output = handlers.output(original, formatted);
 
-        this.inputs.push(input);
-        this.outputs.push(output);
+        input !== null && this.inputs.push(input);
+        output !== null && this.outputs.push(output);
       });
     });
 
