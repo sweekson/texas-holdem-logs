@@ -92,8 +92,8 @@ module.exports = class LogConverter {
       outputs: path.join(dest, filename.outputs),
     };
     !FileReader.exists(dest) && FileWriter.folder(dest, 0o775);
-    FileWriter.json(filepath.inputs, this.inputs);
-    FileWriter.json(filepath.outputs, this.outputs);
+    FileWriter.json(filepath.inputs, this.inputs, null, 0);
+    FileWriter.json(filepath.outputs, this.outputs, null, 0);
     console.log(`File ${filename.inputs} created`);
     console.log(`File ${filename.outputs} created`);
   }
