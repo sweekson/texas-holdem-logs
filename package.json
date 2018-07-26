@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "glob": "^7.1.2",
+    "mkdir-recursive": "^0.4.0",
     "ps-grab": "^1.0.1",
     "split": "^1.0.1"
   }
