@@ -15,7 +15,7 @@ const handler = grab('--handler');
 const prefix = grab('--out-prefix');
 const suffix = grab('--out-suffix');
 
-if (!source && pattern) { return console.error('Source file is not assigned'); }
+if (!source && !pattern) { return console.error('Source file is not assigned'); }
 if (!handler) { return console.error('Model handler is not assigned'); }
 
 const options = {
