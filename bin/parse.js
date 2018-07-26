@@ -13,7 +13,7 @@ const options = {
   cwd: path.join(__dirname, '..', 'data/syslogs'),
   dest: path.join(__dirname, '..', 'data/logs'),
   batch: 10,
-  rotate: 20
+  rotate: 50
 };
 const parse = options => new LogParser(options).parse();
 const foreach = async files => {
