@@ -6,6 +6,7 @@
   "scripts": {
     "parse": "node bin/parse.js",
     "convert": "node bin/convert.js",
+    "concat": "node bin/concat.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
