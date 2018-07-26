@@ -1,5 +1,6 @@
 
 const fs = require('fs');
+const fx = require('mkdir-recursive');
 
 class FileWriter {}
 
@@ -8,7 +9,7 @@ FileWriter.json = (file, data) => {
 };
 
 FileWriter.folder = (path, mode) => {
-  !fs.existsSync(path) && fs.mkdirSync(path, mode);
+  !fs.existsSync(path) && fx.mkdirSync(path, mode);
 };
 
 module.exports = FileWriter;
