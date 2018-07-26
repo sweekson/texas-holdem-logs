@@ -37,7 +37,9 @@ module.exports = class FileBatcher {
     const state = this.state;
     const start = String(state.start).padStart(5, '0');
     const end = String(state.end).padStart(5, '0');
-    const filename = `${start}-${end}.json`;
+    const prefix = this.options.prefix || '';
+    const suffix = this.options.suffix || '';
+    const filename = `${prefix}${start}-${end}${suffix}.json`;
     const dest = this.options.dest;
     const filepath = path.join(dest, filename);
     FileWriter.json(filepath, this.buffer, null, 0);
