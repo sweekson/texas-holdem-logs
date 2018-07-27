@@ -14,7 +14,7 @@ module.exports = class HandsWinRateModelDataHandlers {
   }
 
   output(original, formatted) {
-    if (!original.table.board.length) { return null; }
+    if (original.table.stage !== 'Deal') { return null; }
     const { action } = formatted;
     const outputs = [0, 0, 0, 0, 0, 0];
     outputs.splice(action.type, 1, 1);
