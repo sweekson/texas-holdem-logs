@@ -4,12 +4,12 @@ const Pokereval = require('./Pokereval');
 module.exports = class HandsWinRateModelDataHandlers {
   input(original, formatted) {
     if (original.table.stage !== 'Deal') { return null; }
-    const { table, player } = original;
+    const { table, player, action } = original;
     const rate = Pokereval.rate(...player.cards);
     return [].concat(
       table.players,
       Number((rate).toFixed(2)),
-      player.chips,
+      player.chips + action.bet,
     );
   }
 

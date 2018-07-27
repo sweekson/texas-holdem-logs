@@ -1,12 +1,12 @@
 
 module.exports = class CardsModelDataHandlers {
   input(original, formatted) {
-    const { table, player } = formatted;
+    const { table, player, action } = formatted;
     return [].concat(
       table.players,
       player.cards.map(v => v + 1),
       table.board.map(v => v + 1),
-      player.chips,
+      player.chips + action.bet,
     );
   }
 
